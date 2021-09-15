@@ -7,6 +7,80 @@ urlIdentity = "http://10.1.75.20:5000/v3/"
 urlNetwork = "http://10.1.75.20:9696/v2.0/"
 
 
+def clearProject(authToken, projectID):
+    #remove instances
+    print("[*] Deleting Instances")
+
+    response = requests.get(urlCompute + projectID + "/servers", headers={
+        "content-type": "application/json",
+        "x-auth-token": authToken
+    })
+    servers = json.loads(response.text)["servers"]
+    for server in servers:
+        serverID = server["id"]
+        response = requests.delete(urlCompute + projectID + "/servers/" + serverID, headers={
+            "content-type": "application/json",
+            "x-auth-token": authToken
+        })
+
+    print("[+] Instances Removed")
+
+    #remove routers
+    print("[*] Deleting Routers")
+
+    response = requests.get(urlNetwork + "subnets", headers={
+        "content-type": "application/json",
+        "x-auth-token": authToken
+    })
+    subnets = json.loads(response.text)["subnets"]
+   
+    response = requests.get(urlNetwork + "routers", headers={
+        "content-type": "application/json",
+        "x-auth-token": authToken
+    })
+
+    routers = json.loads(response.text)["routers"]
+
+    for router in routers:
+        routerID = router["id"]
+
+        for subnet in subnets:
+            data = {    "subnet_id" : subnet["id"]  }
+            response = requests.put(urlNetwork + "routers/" + routerID + "/remove_router_interface", json.dumps(data), headers={
+                "content-type": "application/json",
+                "x-auth-token": authToken
+            })
+            
+
+        response = requests.delete(urlNetwork + "routers/" + routerID, headers={
+            "content-type": "application/json",
+            "x-auth-token": authToken
+        })
+
+    print("[+] Routers Removed")
+
+
+    #remove networks
+    print("[*] Deleting Networks")
+
+    response = requests.get(urlNetwork + "networks", headers={
+        "content-type": "application/json",
+        "x-auth-token": authToken
+    })
+    networks = json.loads(response.text)["networks"]
+    for network in networks:
+        if network["name"] == "external_network":   continue
+        networkID = network["id"]
+        response = requests.delete(urlNetwork + "networks/" + networkID, headers={
+            "content-type": "application/json",
+            "x-auth-token": authToken
+        })
+
+    print("[+] Networks Removed")
+
+    exit(0)
+
+
 def createInstances(authToken, networkID, projectID):
     print("[*] Creating Instances")
 
@@ -184,6 +258,9 @@ def main():
 
     authToken, projectID = getToken(username, password)
 
+    if args.clearall:
+        clearProject(authToken, projectID)
+
     networkID, subnetID = createNetwork(authToken)
 
     createRouter(authToken, subnetID)
@@ -202,7 +279,9 @@ def parse_arguments():
     parser.add_argument('-p', '--password',
                         help="Password for the account", required=True)
     parser.add_argument('-pid', '--project',
-                        help="Password for the account")
+                        help="Project ID")
+    parser.add_argument('-c', '--clearall', action="store_true",
+                        help="Remove all the instanes and networks", required=False)
 
     return parser.parse_args()
 
