@@ -102,7 +102,7 @@ def createInstances(authToken, networkID, projectID):
         }
     }
 
-    response = requests.post(urlCompute + projectID + "/servers", json.dumps(data), headers={
+    requests.post(urlCompute + projectID + "/servers", json.dumps(data), headers={
         "content-type": "application/json",
         "x-auth-token": authToken
     })
