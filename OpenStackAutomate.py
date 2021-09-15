@@ -2,11 +2,13 @@ import argparse
 import json
 import requests
 
+# The API endpoints are specified over here
 urlCompute = "http://10.1.75.20:8774/v2.1/"
 urlIdentity = "http://10.1.75.20:5000/v3/"
 urlNetwork = "http://10.1.75.20:9696/v2.0/"
 
 
+# Remove the instances, network and router to start the project fresh
 def clearProject(authToken, projectID):
     #remove instances
     print("[*] Deleting Instances")
@@ -81,6 +83,7 @@ def clearProject(authToken, projectID):
     exit(0)
 
 
+# Create the ubuntu instances
 def createInstances(authToken, networkID, projectID):
     print("[*] Creating Instances")
 
@@ -107,6 +110,7 @@ def createInstances(authToken, networkID, projectID):
     print("[+] Instances Created")
 
 
+# Create the network and subnet along with adding the subnet to the internal network
 def createNetwork(authToken):
     print("[*] Creating Network")
 
@@ -135,6 +139,7 @@ def createNetwork(authToken):
     return networkID, subnetID
 
 
+# Create the router and add it to the external, internal networks
 def createRouter(authToken, subnetID):
     print("[*] Creating Router")
 
@@ -182,6 +187,7 @@ def createRouter(authToken, subnetID):
     print("[+] Router Interface Added")
 
 
+# Create the subnet for the internal netowrk
 def createSubnet(authToken, networkID):
     data = {
         "subnet": {
@@ -201,6 +207,7 @@ def createSubnet(authToken, networkID):
     return subnetID
 
 
+# Get the auth key from the identity API for the project
 def getToken(username, password):
     print("[*] Authenticating")
 
@@ -270,6 +277,7 @@ def main():
     print("[+] Successfully Completed")
 
 
+# Parse and get the command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="OpenStack Network Automation V1.0",
