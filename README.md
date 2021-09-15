@@ -24,7 +24,7 @@ Run the Script
 
 2. To create the network
 
-> python3 OpenStackAutomate.py -u <username> -p <password> -c
+> python3 OpenStackAutomate.py -u username -p password -c
 
 
 Help menu:
